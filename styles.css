@@ -603,6 +603,7 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
+  justify-content: flex-start;
   position: sticky;
   top: 57px;
   height: calc(100vh - 57px);
@@ -753,15 +754,6 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
   border: 1px solid var(--border-default);
   border-radius: var(--r-lg);
   overflow: hidden;
-}
-
-.resultaat-header {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-  padding: var(--sp-4) var(--sp-6);
-  cursor: pointer;
-  transition: background var(--t-fast);
 }
 
 .resultaat-header:hover { background: var(--bg-secondary); }
@@ -1477,18 +1469,6 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
   .nav-item { white-space: nowrap; }
 }
 
-/* Teacher login overlay */
-.teacher-login-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--bg-secondary);
-  z-index: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--sp-6);
-}
-
 /* Resultaten verbeterd */
 .resultaat-header {
   display: grid;
@@ -1501,33 +1481,6 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
 }
 
 .resultaat-header:hover { background: var(--bg-secondary); }
-
-.resultaat-token-col {}
-.resultaat-info-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.resultaat-meta-col { text-align: right; white-space: nowrap; }
-
-.resultaat-stats {
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
-  font-family: var(--font-mono);
-  letter-spacing: 0.03em;
-}
-
-.antwoord-vraag-nr {
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: var(--sp-1);
-}
-
-.antwoord-leeg { color: var(--text-tertiary); font-style: italic; }
-.antwoord-correct { border-left: 3px solid var(--green-600); padding-left: var(--sp-3); background: var(--green-100); }
-.antwoord-fout { border-left: 3px solid var(--error); padding-left: var(--sp-3); background: var(--red-100); }
-
-/* Sidebar instellingen knop onderaan */
-.sidebar { justify-content: flex-start; }
 
 /* ── DOCENT LOGIN OVERLAY ───────────────────────────────────── */
 .teacher-login-overlay {
