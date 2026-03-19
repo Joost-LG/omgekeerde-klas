@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docentendashboard — Omgekeerde Klas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="screen-teacher">
+
+  <!-- ══ PIN-LOGIN OVERLAY ════════════════════════════════════ -->
+  <div id="teacher-login-overlay" class="teacher-login-overlay" style="display:none;" aria-modal="true" role="dialog" aria-label="Docent inloggen">
+    <div class="teacher-login-card">
+      <div class="login-icon">◈</div>
+      <h1 class="login-title">Docentomgeving</h1>
+      <p class="login-desc">Voer de PIN-code in om toegang te krijgen tot het dashboard. Leerlingen gebruiken de leerlingenomgeving via hun token.</p>
+
+      <div class="form-group">
+        <label class="form-label" for="docent-pin">PIN-code</label>
+        <input
+          class="form-input input-mono input-lg"
+          type="password"
+          id="docent-pin"
+          placeholder="••••"
+          maxlength="12"
+          autocomplete="current-password"
+          aria-describedby="pin-hint"
+        >
+        <p class="form-hint" id="pin-hint">Standaard PIN bij eerste gebruik: <strong>1234</strong> — wijzig deze daarna onder Instellingen.</p>
+        <div class="form-error hidden" id="pin-error" role="alert"></div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="btn-pin-login">Inloggen →</button>
+
+      <div class="login-privacy">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 6V4.5a2.5 2.5 0 015 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+        Alleen jij hebt toegang tot dit dashboard
+      </div>
+
+      <a href="index.html" class="back-link" style="justify-content:center;margin-top:4px;">← Terug naar portaal</a>
+    </div>
+  </div>
+
+  <!-- ══ DASHBOARD ════════════════════════════════════════════ -->
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="index.html" class="back-link" aria-label="Terug naar portaal">
+        <span class="back-arrow">←</span>
+        <span class="brand-mark">◈</span>
+        <span class="brand-name">Omgekeerde Klas</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="header-badge badge-teacher">Docent</div>
+        <button class="btn btn-ghost btn-sm" id="btn-uitloggen" aria-label="Uitloggen">Uitloggen</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-layout">
+
+    <!-- Sidebar navigatie -->
+    <nav class="sidebar" aria-label="Docentmenu">
+      <button class="nav-item active" data-panel="opdrachten" aria-current="page">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 6h8M5 9h6M5 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Opdrachten
+      </button>
+      <button class="nav-item" data-panel="tokens" aria-current="false">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="6" width="14" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 6V4.5a3.5 3.5 0 017 0V6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="10" r="1.5" fill="currentColor"/></svg>
+        Tokens
+      </button>
+      <button class="nav-item" data-panel="resultaten" aria-current="false">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14l4-5 3 3 3-6 4 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Resultaten
+      </button>
+      <button class="nav-item" data-panel="instellingen" aria-current="false">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M9 2v2M9 14v2M2 9h2M14 9h2M3.93 3.93l1.41 1.41M12.66 12.66l1.41 1.41M3.93 14.07l1.41-1.41M12.66 5.34l1.41-1.41" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        Instellingen
+      </button>
+    </nav>
+
+    <!-- Hoofdinhoud -->
+    <main class="main-content" id="main-content">
+
+      <!-- PANEL: Opdrachten -->
+      <section class="panel" id="panel-opdrachten" role="tabpanel">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Opdrachten</h1>
+            <p class="panel-subtitle">Maak en beheer opdrachten met vragen en mediabronnen</p>
+          </div>
+          <button class="btn btn-primary" id="btn-nieuwe-opdracht">
+            <span>+</span> Nieuwe opdracht
+          </button>
+        </div>
+
+        <div class="empty-state" id="empty-opdrachten">
+          <div class="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="8" y="8" width="32" height="32" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M16 20h16M16 26h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="36" cy="36" r="8" fill="var(--bg-primary)" stroke="currentColor" stroke-width="1.5"/><path d="M33 36h6M36 33v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="empty-title">Nog geen opdrachten</h3>
+          <p class="empty-desc">Klik op "Nieuwe opdracht" om te beginnen. Je kunt vragen toevoegen met tekst, video of PDF als bron.</p>
+          <button class="btn btn-primary" onclick="document.getElementById('btn-nieuwe-opdracht').click()">Maak eerste opdracht</button>
+        </div>
+
+        <div class="opdracht-list" id="opdracht-list"></div>
+      </section>
+
+      <!-- PANEL: Tokens -->
+      <section class="panel hidden" id="panel-tokens" role="tabpanel">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Tokens beheren</h1>
+            <p class="panel-subtitle">Genereer anonieme toegangscodes voor leerlingen</p>
+          </div>
+          <button class="btn btn-primary" id="btn-genereer-tokens">Tokens genereren</button>
+        </div>
+
+        <div class="token-config card">
+          <h3 class="card-section-title">Instellingen</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="token-opdracht">Koppel aan opdracht</label>
+              <select class="form-select" id="token-opdracht">
+                <option value="">— Kies een opdracht —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="token-aantal">Aantal tokens</label>
+              <input class="form-input" type="number" id="token-aantal" min="1" max="35" value="25">
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state hidden" id="empty-tokens">
+          <div class="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="18" width="36" height="20" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M14 18v-4a10 10 0 0120 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="24" cy="28" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+          </div>
+          <h3 class="empty-title">Geen tokens aangemaakt</h3>
+          <p class="empty-desc">Kies een opdracht en genereer tokens om uit te delen aan leerlingen.</p>
+        </div>
+
+        <div class="token-grid" id="token-grid"></div>
+      </section>
+
+      <!-- PANEL: Resultaten -->
+      <section class="panel hidden" id="panel-resultaten" role="tabpanel">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Resultaten</h1>
+            <p class="panel-subtitle">Bekijk ingezonden antwoorden per token</p>
+          </div>
+          <div class="header-actions">
+            <select class="form-select" id="resultaat-filter" aria-label="Filter op opdracht">
+              <option value="">Alle opdrachten</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="empty-state" id="empty-resultaten">
+          <div class="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M8 38l8-10 6 6 8-14 8 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3 class="empty-title">Nog geen resultaten</h3>
+          <p class="empty-desc">Zodra leerlingen hun antwoorden inzenden, verschijnen die hier — gegroepeerd per token.</p>
+        </div>
+
+        <div class="resultaten-list" id="resultaten-list"></div>
+      </section>
+
+      <!-- PANEL: Instellingen -->
+      <section class="panel hidden" id="panel-instellingen" role="tabpanel">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Instellingen</h1>
+            <p class="panel-subtitle">Beveilig je docentomgeving met een persoonlijke PIN</p>
+          </div>
+        </div>
+
+        <div class="card" style="max-width:480px;">
+          <h3 class="card-section-title">PIN-code wijzigen</h3>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="form-group">
+              <label class="form-label" for="pin-huidig">Huidige PIN</label>
+              <input class="form-input input-mono" type="password" id="pin-huidig" placeholder="Huidige PIN" autocomplete="current-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pin-nieuw">Nieuwe PIN</label>
+              <input class="form-input input-mono" type="password" id="pin-nieuw" placeholder="Minimaal 4 tekens" autocomplete="new-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pin-bevestig">Bevestig nieuwe PIN</label>
+              <input class="form-input input-mono" type="password" id="pin-bevestig" placeholder="Herhaal nieuwe PIN" autocomplete="new-password">
+            </div>
+            <div class="form-error hidden" id="pin-wijzig-error" role="alert"></div>
+            <div class="form-error hidden" id="pin-wijzig-ok" role="status" style="background:var(--green-100);color:var(--green-600);"></div>
+            <button class="btn btn-primary" id="btn-sla-pin-op">PIN opslaan</button>
+          </div>
+        </div>
+
+        <div class="card" style="max-width:480px;margin-top:20px;">
+          <h3 class="card-section-title">Sessie</h3>
+          <p style="font-size:.875rem;color:var(--text-secondary);margin-bottom:16px;">Je bent momenteel ingelogd als docent. Klik op uitloggen om de sessie te beëindigen. Je wordt teruggestuurd naar het inlogscherm.</p>
+          <button class="btn btn-danger" id="btn-uitloggen-instellingen">Uitloggen</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAAL: Opdracht aanmaken/bewerken -->
+  <div class="modal-overlay hidden" id="modal-opdracht" role="dialog" aria-modal="true" aria-labelledby="modal-opdracht-title">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-opdracht-title">Nieuwe opdracht</h2>
+        <button class="modal-close" id="modal-opdracht-close" aria-label="Sluit venster">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="opdracht-naam">Naam van de opdracht *</label>
+          <input class="form-input" type="text" id="opdracht-naam" placeholder="bijv. Hoofdstuk 3 — De Verlichting">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="opdracht-beschrijving">Korte beschrijving</label>
+          <textarea class="form-textarea" id="opdracht-beschrijving" rows="2" placeholder="Optionele toelichting voor leerlingen"></textarea>
+        </div>
+        <div class="vragen-editor">
+          <div class="vragen-header">
+            <h3 class="section-label">Vragen</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-voeg-vraag-toe">+ Vraag toevoegen</button>
+          </div>
+          <div class="vraag-list" id="vraag-list">
+            <div class="empty-inline">Voeg hieronder vragen toe om de opdracht te vullen.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btn-annuleer-opdracht">Annuleren</button>
+        <button class="btn btn-primary" id="btn-sla-opdracht-op">Opdracht opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAAL: Vraag editor -->
+  <div class="modal-overlay hidden" id="modal-vraag" role="dialog" aria-modal="true" aria-labelledby="modal-vraag-title">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-vraag-title">Vraag bewerken</h2>
+        <button class="modal-close" id="modal-vraag-close" aria-label="Sluit venster">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="form-group">
+          <label class="form-label" for="vraag-tekst">Vraagtekst *</label>
+          <textarea class="form-textarea" id="vraag-tekst" rows="3" placeholder="Stel hier je vraag..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Vraagtype</label>
+          <div class="toggle-group" role="radiogroup" aria-label="Vraagtype">
+            <button class="toggle-btn active" data-type="open" role="radio" aria-checked="true">Open vraag</button>
+            <button class="toggle-btn" data-type="meerkeuze" role="radio" aria-checked="false">Meerkeuze</button>
+          </div>
+        </div>
+
+        <!-- Meerkeuze opties -->
+        <div class="meerkeuze-config hidden" id="meerkeuze-config">
+          <label class="form-label">Antwoordopties</label>
+          <div class="opties-list" id="opties-list"></div>
+          <button class="btn btn-ghost btn-sm" id="btn-voeg-optie-toe">+ Optie toevoegen</button>
+        </div>
+
+        <!-- Media sectie -->
+        <div class="media-config">
+          <label class="form-label">Mediabron <span class="form-label-hint">(optioneel)</span></label>
+          <div class="media-type-select">
+            <button class="media-type-btn active" data-media="geen">Geen</button>
+            <button class="media-type-btn" data-media="youtube">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor"/></svg>
+              YouTube
+            </button>
+            <button class="media-type-btn" data-media="pdf">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9H3V2z" stroke="currentColor" stroke-width="1.2"/><path d="M10 2v3h3" stroke="currentColor" stroke-width="1.2"/><path d="M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+              PDF / Web
+            </button>
+          </div>
+
+          <div class="media-input hidden" id="media-youtube-input">
+            <input class="form-input" type="url" id="youtube-url" placeholder="https://www.youtube.com/watch?v=...">
+            <p class="form-hint">Plak de volledige YouTube URL. Leerlingen zien een previewkaart en openen de video op YouTube.</p>
+          </div>
+
+          <div class="media-input hidden" id="media-pdf-input">
+            <input class="form-input" type="url" id="pdf-url" placeholder="https://... (link naar PDF of webpagina)">
+            <p class="form-hint">Link naar een PDF of webpagina. Leerlingen openen de bron in een nieuw tabblad.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="btn-annuleer-vraag">Annuleren</button>
+        <button class="btn btn-primary" id="btn-sla-vraag-op">Vraag opslaan</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omgekeerde Klas — Nederlands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="stijl.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     SCHERM 1: PORTAAL
+═══════════════════════════════════════════════ -->
+<div id="scherm-portaal" class="screen actief">
+  <div class="portaal-kern">
+    <h1 class="portaal-titel">Omgekeerde<br><em>Klas</em></h1>
+    <p class="portaal-ondertitel">Een privacyveilig platform voor Nederlands</p>
+    <div class="portaal-keuze">
+      <button class="portaal-knop" onclick="toonScherm('scherm-docent-login')">
+        <span class="pk-icoon">🏫</span>
+        <span class="pk-label">Ik ben docent</span>
+        <span class="pk-sub">Dashboard & opdrachten beheren</span>
+      </button>
+      <button class="portaal-knop" onclick="toonScherm('scherm-student-login')">
+        <span class="pk-icoon">✏️</span>
+        <span class="pk-label">Ik ben leerling</span>
+        <span class="pk-sub">Inloggen met mijn token</span>
+      </button>
+    </div>
+    <p class="portaal-voetnoot">🔒 Geen namen of e-mailadressen opgeslagen. Volledig anoniem. <a onclick="toonScherm('scherm-student-login')">Direct inloggen →</a></p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCHERM 2: DOCENT LOGIN
+═══════════════════════════════════════════════ -->
+<div id="scherm-docent-login" class="screen">
+  <div style="padding:1rem 2rem;border-bottom:var(--border);display:flex;align-items:center;gap:1rem;">
+    <button class="knop klein" onclick="toonScherm('scherm-portaal')">← Terug</button>
+    <span class="tekst-grijs">Docentenportaal</span>
+  </div>
+  <div style="flex:1;display:flex;justify-content:center;align-items:center;padding:2rem;">
+    <div class="login-box">
+      <h2 class="login-kop">Docenttoegang</h2>
+      <p class="login-sub">Voer uw toegangscode in om het dashboard te openen.</p>
+      <div id="docent-melding" class="melding"></div>
+      <div class="veld">
+        <label for="docent-ww">Toegangscode</label>
+        <input id="docent-ww" type="password" class="invoer" placeholder="••••••••" autocomplete="off">
+      </div>
+      <button class="knop primair" style="width:100%;justify-content:center;" onclick="docentLogin()">Inloggen</button>
+      <p class="demo-hint mt-2">Demo-code: <code>docent2024</code> &nbsp;|&nbsp; Sla op in uw eigen bestand voor productiegebruik.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCHERM 3: DOCENT DASHBOARD
+═══════════════════════════════════════════════ -->
+<div id="scherm-dashboard" class="screen">
+  <div class="topbalk">
+    <div class="logo">Omgekeerde <span>Klas</span></div>
+    <div class="topbalk-nav">
+      <span id="dashboard-welkom" class="tekst-grijs" style="color:#888;font-size:0.78rem;"></span>
+      <button class="knop klein" style="border-color:#bbb;" onclick="uitloggen()">Uitloggen</button>
+    </div>
+  </div>
+  <div class="dashboard-grid" style="flex:1;">
+
+    <!-- ZIJBALK -->
+    <div class="zijbalk">
+      <div class="zijbalk-kop">Opdrachten</div>
+      <div id="opdracht-lijst"></div>
+      <button class="knop primair mt-2" style="width:100%;justify-content:center;" onclick="openNieuweOpdracht()">+ Nieuwe opdracht</button>
+      <hr class="scheidslijn">
+      <div class="zijbalk-kop">Tokens</div>
+      <button class="knop mt-1" style="width:100%;justify-content:center;" onclick="toonPanel('panel-tokens')">🔑 Beheer tokens</button>
+    </div>
+
+    <!-- HOOFD -->
+    <div class="hoofd-inhoud">
+
+      <!-- PANEL: WELKOM -->
+      <div id="panel-welkom" class="panel actief">
+        <h2 style="font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:0.5rem;">Welkom terug</h2>
+        <p class="tekst-grijs mb-2">Kies een opdracht uit de zijbalk of maak een nieuwe aan.</p>
+        <div class="stat-grid">
+          <div class="stat-kaart"><div class="stat-getal" id="stat-opdrachten">0</div><div class="stat-label">Opdrachten</div></div>
+          <div class="stat-kaart"><div class="stat-getal" id="stat-tokens">0</div><div class="stat-label">Tokens actief</div></div>
+          <div class="stat-kaart"><div class="stat-getal" id="stat-inzendingen">0</div><div class="stat-label">Inzendingen</div></div>
+        </div>
+        <div class="kaart">
+          <p class="tekst-grijs" style="font-size:0.82rem;">💡 <strong>Tip:</strong> Maak eerst een opdracht aan, genereer dan tokens voor uw klas en deel de QR-code via het smartboard.</p>
+        </div>
+      </div>
+
+      <!-- PANEL: OPDRACHT BEWERKEN -->
+      <div id="panel-opdracht-editor" class="panel">
+        <div class="flex-tussendoor mb-2">
+          <h2 style="font-family:'DM Serif Display',serif;font-size:1.4rem;">Opdracht bewerken</h2>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="knop klein" onclick="toonQR()">📲 QR-code</button>
+            <button class="knop klein gevaar" onclick="verwijderOpdracht()">Verwijder</button>
+            <button class="knop primair klein" onclick="slaOpdraachtOp()">Opslaan ✓</button>
+          </div>
+        </div>
+        <div id="editor-melding" class="melding"></div>
+        <div class="tabs">
+          <div class="tab actief" onclick="editorTab('inhoud',this)">Inhoud</div>
+          <div class="tab" onclick="editorTab('resultaten',this)">Resultaten</div>
+        </div>
+        <div id="editor-inhoud" class="panel actief">
+          <div class="veld mb-2">
+            <label>Titel van de opdracht</label>
+            <input id="opdracht-titel" class="invoer" placeholder="bv. Hoofdstuk 3 — Werkwoordspelling">
+          </div>
+          <div class="veld mb-2">
+            <label>Instructie voor leerlingen</label>
+            <textarea id="opdracht-instructie" class="invoer" rows="2" placeholder="bv. Beantwoord de vragen na het bekijken van de video over werkwoorden."></textarea>
+          </div>
+          <hr class="scheidslijn">
+          <div class="flex-tussendoor mb-2">
+            <strong style="font-size:0.88rem;">Vragen</strong>
+            <div style="display:flex;gap:0.5rem;">
+              <button class="knop klein" onclick="voegVraagToe('mc')">+ Meerkeuze</button>
+              <button class="knop klein" onclick="voegVraagToe('open')">+ Open vraag</button>
+            </div>
+          </div>
+          <div id="vragen-container"></div>
+        </div>
+        <div id="editor-resultaten" class="panel">
+          <div class="stat-grid" id="resultaat-stats" style="margin-bottom:1.5rem;"></div>
+          <h3 style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--grijs-donker);margin-bottom:0.75rem;">Resultaten per token</h3>
+          <div id="resultaten-tabel-container"></div>
+        </div>
+      </div>
+
+      <!-- PANEL: TOKENS -->
+      <div id="panel-tokens" class="panel">
+        <div class="flex-tussendoor mb-2">
+          <h2 style="font-family:'DM Serif Display',serif;font-size:1.4rem;">Tokenbeheer</h2>
+          <div style="display:flex;gap:0.5rem;">
+            <input id="token-aantal" type="number" class="invoer" value="30" min="1" max="100" style="width:80px;">
+            <button class="knop primair" onclick="genereerTokens()">Genereer tokens</button>
+          </div>
+        </div>
+        <p class="tekst-grijs mb-2">Geef elke leerling één uniek token. Tokens bevatten <strong>geen persoonsgegevens</strong>.</p>
+        <div id="token-melding" class="melding"></div>
+        <div id="token-container"></div>
+        <div id="token-acties" style="display:none;" class="mt-2">
+          <button class="knop" onclick="kopieerAlleTokens()">📋 Kopieer alles</button>
+          <button class="knop gevaar klein" onclick="verwijderGebruikteTokens()" style="margin-left:0.5rem;">Verwijder gebruikte tokens</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCHERM 4: STUDENT LOGIN
+═══════════════════════════════════════════════ -->
+<div id="scherm-student-login" class="screen">
+  <div style="padding:1rem 2rem;border-bottom:var(--border);display:flex;align-items:center;gap:1rem;">
+    <button class="knop klein" onclick="toonScherm('scherm-portaal')">← Terug</button>
+    <span class="tekst-grijs">Leerlingenomgeving</span>
+  </div>
+  <div style="flex:1;display:flex;justify-content:center;align-items:center;padding:2rem;">
+    <div class="login-box" style="max-width:440px;">
+      <h2 class="login-kop">Inloggen met token</h2>
+      <p class="login-sub">Voer het token in dat je van je docent hebt gekregen.</p>
+      <div id="student-melding" class="melding"></div>
+      <div class="veld">
+        <label>Jouw token</label>
+        <input id="student-token" class="invoer token-invoer-groot" placeholder="bv. NK-7A2X" maxlength="10" autocomplete="off" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')studentLogin()">
+      </div>
+      <button class="knop activeer mt-1" style="width:100%;justify-content:center;" onclick="studentLogin()">Opdracht starten →</button>
+      <p class="tekst-grijs mt-2" style="font-size:0.76rem;line-height:1.5;">🔒 Jouw naam wordt nergens opgeslagen. Alleen je token is bekend.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCHERM 5: STUDENT TAAK
+═══════════════════════════════════════════════ -->
+<div id="scherm-student-taak" class="screen">
+  <div class="student-topbalk">
+    <div>
+      <span class="student-titel" id="taak-titel-kop">Opdracht</span>
+      <span class="badge grijs" style="margin-left:0.5rem;" id="taak-token-badge"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:1rem;">
+      <span id="voortgang-tekst" class="tekst-grijs" style="font-family:'DM Mono',monospace;font-size:0.78rem;"></span>
+      <button class="knop klein gevaar" onclick="studentUitloggen()">Afsluiten</button>
+    </div>
+  </div>
+  <div class="voortgang-container">
+    <div class="voortgang-balk" id="student-voortgang"></div>
+  </div>
+  <div class="taak-inhoud">
+    <div class="container">
+      <div id="student-taak-melding" class="melding" style="margin-top:1rem;"></div>
+      <div id="taak-instructie-blok" class="kaart instructie mb-2" style="display:none;margin-top:1.5rem;">
+        <div style="font-size:0.69rem;text-transform:uppercase;letter-spacing:0.09em;font-weight:700;color:var(--blauw);margin-bottom:0.4rem;">Instructie</div>
+        <p id="taak-instructie-tekst" style="font-size:0.9rem;line-height:1.6;"></p>
+      </div>
+      <div id="taak-vragen" style="margin-top:1.5rem;"></div>
+      <div id="taak-afsluiting" class="afsluiting" style="display:none;">
+        <div class="afsluiting-icoon">✓</div>
+        <h2 class="afsluiting-kop">Antwoorden ingezonden</h2>
+        <p class="afsluiting-sub" id="afsluiting-tekst">Jouw antwoorden zijn opgeslagen. De docent bespreekt de antwoorden in de les.</p>
+        <button class="knop" onclick="studentUitloggen()">Afsluiten</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════ -->
+
+<!-- Bevestigingsmodal inzenden -->
+<div id="bevestig-modal" class="modal-overlay">
+  <div class="modal" style="max-width:400px;">
+    <h3 class="modal-titel">Antwoorden inzenden?</h3>
+    <p style="font-size:0.88rem;color:var(--grijs-donker);margin:0.5rem 0 1.5rem;line-height:1.6;">
+      Je staat op het punt je antwoorden in te sturen.<br>
+      <strong>Je token kan daarna niet opnieuw gebruikt worden.</strong><br>
+      De docent bespreekt de antwoorden in de les.
+    </p>
+    <div style="display:flex;gap:0.75rem;">
+      <button class="knop" style="flex:1;justify-content:center;" onclick="document.getElementById('bevestig-modal').classList.remove('open')">Terug</button>
+      <button class="knop primair" style="flex:1;justify-content:center;" onclick="bevestigInzenden()">Ja, inzenden →</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR-code modal -->
+<div id="qr-modal" class="modal-overlay" onclick="if(event.target===this)sluitQR()">
+  <div class="modal" style="max-width:440px;">
+    <h3 class="modal-titel">QR-code & deellink</h3>
+    <p class="modal-sub" id="qr-opdracht-naam"></p>
+    <div id="qr-svg-container" style="margin:0 auto 1rem;width:200px;height:200px;border:var(--border);padding:8px;background:#fff;"></div>
+    <label style="text-align:left;display:block;">Deellink <span style="font-weight:400;text-transform:none;">(voor Magister / Somtoday)</span></label>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;">
+      <input id="qr-link-input" class="invoer" readonly style="font-family:'DM Mono',monospace;font-size:0.75rem;flex:1;" value="">
+      <button class="knop primair" id="kopieer-knop" onclick="kopieerDeelLink()" style="flex-shrink:0;">Kopieer</button>
+    </div>
+    <div style="display:flex;gap:0.5rem;">
+      <button class="knop" style="flex:1;justify-content:center;" onclick="printQR()">🖨️ Printen</button>
+      <button class="knop primair" style="flex:1;justify-content:center;" onclick="sluitQR()">Sluiten</button>
+    </div>
+  </div>
+</div>
+
+<!-- Print layout (verborgen, alleen voor printen) -->
+<div id="print-qr" style="display:none;">
+  <div style="font-family:Georgia,serif;max-width:400px;margin:2cm auto;text-align:center;border:2px solid #000;padding:2rem;">
+    <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.5rem;color:#555;">Omgekeerde Klas — Nederlands</div>
+    <h2 id="print-opdracht-titel" style="font-size:1.3rem;margin:0 0 0.25rem;"></h2>
+    <p id="print-opdracht-instructie" style="font-size:0.8rem;color:#555;margin:0 0 1.25rem;"></p>
+    <div id="print-qr-svg" style="width:200px;height:200px;margin:0 auto 1.25rem;"></div>
+    <p style="font-size:0.7rem;color:#555;margin-bottom:0.5rem;">Scan de QR-code of gebruik onderstaande link:</p>
+    <p id="print-link" style="font-family:monospace;font-size:0.72rem;word-break:break-all;background:#f0f0f0;padding:0.4rem 0.6rem;border:1px solid #ccc;"></p>
+    <p style="font-size:0.65rem;color:#888;margin-top:1.5rem;">🔒 Anoniem — er worden geen persoonsgegevens opgeslagen</p>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

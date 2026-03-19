@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leerlingenomgeving — Omgekeerde Klas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="screen-student">
+
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="index.html" class="back-link" aria-label="Terug naar portaal">
+        <span class="back-arrow">←</span>
+        <span class="brand-mark">◈</span>
+        <span class="brand-name">Omgekeerde Klas</span>
+      </a>
+      <div class="student-meta" id="student-meta" aria-live="polite"></div>
+    </div>
+  </header>
+
+  <!-- Login scherm -->
+  <main class="student-login" id="student-login">
+    <div class="login-card">
+      <div class="login-icon">◈</div>
+      <h1 class="login-title">Voer je token in</h1>
+      <p class="login-desc">Je token is een unieke code die je van je docent hebt ontvangen. Jouw antwoorden worden anoniem opgeslagen.</p>
+
+      <div class="form-group">
+        <label class="form-label" for="token-input">Token</label>
+        <input
+          class="form-input input-mono input-lg"
+          type="text"
+          id="token-input"
+          placeholder="NK-XXXX"
+          maxlength="7"
+          autocomplete="off"
+          spellcheck="false"
+          aria-describedby="token-hint"
+        >
+        <p class="form-hint" id="token-hint">Formaat: NK- gevolgd door 4 tekens. Bijv. NK-A7B3</p>
+        <div class="form-error hidden" id="token-error" role="alert"></div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="btn-token-login">Beginnen →</button>
+
+      <div class="login-privacy">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 6V4.5a2.5 2.5 0 015 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+        Geen naam, geen e-mail — volledig anoniem
+      </div>
+    </div>
+  </main>
+
+  <!-- Opdracht interface -->
+  <div class="student-workspace hidden" id="student-workspace">
+
+    <!-- Voortgangsbalk -->
+    <div class="progress-bar-container" role="progressbar" id="progress-container" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" id="progress-bar"></div>
+      <div class="progress-label" id="progress-label" aria-live="polite"></div>
+    </div>
+
+    <!-- Vraagnavigatie -->
+    <nav class="vraag-nav" aria-label="Vraagnavigatie" id="vraag-nav">
+      <!-- Gevuld via JS -->
+    </nav>
+
+    <!-- Werkruimte -->
+    <div class="workspace-inner" id="workspace-inner">
+
+      <!-- Media zijde (split-screen) -->
+      <aside class="media-panel" id="media-panel" aria-label="Bron bekijken">
+        <div class="media-panel-header">
+          <span class="media-panel-label" id="media-type-label">Bron</span>
+          <button class="btn-icon" id="btn-toggle-media" aria-label="Media verbergen/tonen" title="Verberg/toon bron">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8s2.5-5 6-5 6 5 6 5-2.5 5-6 5-6-5-6-5z" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.2"/></svg>
+          </button>
+        </div>
+        <div class="media-panel-body" id="media-panel-body">
+          <!-- Media renderer hier -->
+        </div>
+      </aside>
+
+      <!-- Vraag zijde -->
+      <article class="vraag-panel" id="vraag-panel">
+        <div class="vraag-panel-inner">
+          <div class="vraag-nummer" id="vraag-nummer" aria-live="polite"></div>
+          <h2 class="vraag-tekst" id="vraag-tekst"></h2>
+
+          <!-- Open vraag -->
+          <div class="antwoord-open hidden" id="antwoord-open">
+            <label class="form-label sr-only" for="open-antwoord">Jouw antwoord</label>
+            <textarea
+              class="form-textarea textarea-answer"
+              id="open-antwoord"
+              placeholder="Schrijf hier je antwoord..."
+              rows="6"
+              aria-describedby="vraag-tekst"
+            ></textarea>
+            <div class="word-count" id="word-count" aria-live="polite">0 woorden</div>
+          </div>
+
+          <!-- Meerkeuze -->
+          <div class="antwoord-meerkeuze hidden" id="antwoord-meerkeuze" role="radiogroup" aria-labelledby="vraag-tekst">
+            <!-- Opties via JS -->
+          </div>
+
+          <!-- Navigatieknoppen -->
+          <div class="vraag-actions">
+            <button class="btn btn-ghost" id="btn-vorige" disabled aria-label="Vorige vraag">← Vorige</button>
+            <button class="btn btn-primary" id="btn-volgende" aria-label="Volgende vraag of indienen">Volgende →</button>
+          </div>
+
+        </div>
+      </article>
+    </div>
+
+  </div>
+
+  <!-- Inzendbevestiging -->
+  <div class="student-done hidden" id="student-done">
+    <div class="done-card">
+      <div class="done-icon">✓</div>
+      <h2 class="done-title">Opdracht ingezonden!</h2>
+      <p class="done-desc">Je antwoorden zijn opgeslagen. Je token is:</p>
+      <div class="done-token" id="done-token-display"></div>
+      <p class="done-hint">Bewaar dit token als je je antwoorden later wilt terugkijken.</p>
+      <div class="done-actions">
+        <button class="btn btn-secondary" id="btn-terug-opdracht">Terugkijken</button>
+        <a href="index.html" class="btn btn-ghost">Terug naar portaal</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
