@@ -930,7 +930,41 @@ const DocentController = (() => {
     grid.innerHTML = '';
 
     tokens.forEach(token => {
-      grid.appendChild(UIComponents.tokenChip(token));
+      const opdracht = StorageModule.getOpdracht(token.opdrachtId);
+      const opdrachtNaam = opdracht?.naam ?? null;
+
+      const el = document.createElement('div');
+      el.className = `token-chip${token.gebruikt ? ' used' : ''}`;
+      el.setAttribute('title', 'Klik om te kopiëren');
+      el.setAttribute('tabindex', '0');
+
+      const regel1 = document.createElement('span');
+      regel1.style.cssText = 'font-family:var(--font-mono);font-size:1rem;font-weight:600;letter-spacing:0.1em;';
+      regel1.textContent = token.code;
+
+      const regel2 = document.createElement('span');
+      regel2.style.cssText = `font-size:0.75rem;${opdrachtNaam ? 'color:var(--text-secondary);' : 'color:var(--grey-400);'}`;
+      regel2.textContent = opdrachtNaam ?? 'Geen opdracht';
+
+      const regel3 = document.createElement('span');
+      regel3.style.cssText = `font-size:0.72rem;font-weight:500;${token.gebruikt ? 'color:#f59e0b;' : 'color:var(--green-600);'}`;
+      regel3.textContent = token.gebruikt ? '● In gebruik' : '○ Beschikbaar';
+
+      el.appendChild(regel1);
+      el.appendChild(regel2);
+      el.appendChild(regel3);
+
+      el.addEventListener('click', () => {
+        navigator.clipboard?.writeText(token.code).then(() => {
+          regel1.textContent = '✓ Gekopieerd';
+          setTimeout(() => { regel1.textContent = token.code; }, 1400);
+        });
+      });
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') el.click();
+      });
+
+      grid.appendChild(el);
     });
   };
 
@@ -970,94 +1004,129 @@ const DocentController = (() => {
     document.getElementById('resultaat-filter')?.addEventListener('change', _renderResultaten);
   };
 
+  const _renderResultatenItem = (res) => {
+    const opdracht = StorageModule.getOpdracht(res.opdrachtId);
+    const vragen   = opdracht?.vragen || [];
+    const beantwoord = vragen.filter(v => res.antwoorden?.[v.id] !== undefined && res.antwoorden?.[v.id] !== '').length;
+    const datum = new Date(res.datum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    const item = document.createElement('div');
+    item.className = 'resultaat-item';
+
+    // Bouw antwoorden HTML
+    const antwoordenHtml = vragen.map((vraag, qi) => {
+      const antwoord = res.antwoorden?.[vraag.id];
+      const heeftAntwoord = antwoord !== undefined && antwoord !== null && antwoord !== '';
+      const letters = 'ABCDE';
+
+      let antwoordTekst = '';
+      let antwoordKlasse = '';
+      if (!heeftAntwoord) {
+        antwoordTekst = '— niet beantwoord —';
+        antwoordKlasse = 'antwoord-leeg';
+      } else if (vraag.type === 'meerkeuze') {
+        const optieIdx = parseInt(antwoord);
+        const optie = vraag.opties?.[optieIdx];
+        const isCorrect = optieIdx === vraag.correctOptie;
+        antwoordTekst = `${letters[optieIdx] || optieIdx}. ${optie?.tekst || ''}`;
+        antwoordKlasse = vraag.correctOptie !== null
+          ? (isCorrect ? 'antwoord-correct' : 'antwoord-fout')
+          : '';
+      } else {
+        antwoordTekst = antwoord;
+      }
+
+      return `
+        <div class="antwoord-item">
+          <div class="antwoord-vraag-nr">Vraag ${qi + 1}</div>
+          <div class="antwoord-vraag">${UIComponents.escapeHtml(vraag.tekst)}</div>
+          <div class="antwoord-waarde ${antwoordKlasse}">${UIComponents.escapeHtml(antwoordTekst)}</div>
+        </div>`;
+    }).join('');
+
+    item.innerHTML = `
+      <div class="resultaat-header" role="button" tabindex="0" aria-expanded="false">
+        <div class="resultaat-token-col">
+          <span class="resultaat-token">${UIComponents.escapeHtml(res.token)}</span>
+        </div>
+        <div class="resultaat-info-col">
+          <span class="resultaat-stats">${beantwoord} / ${vragen.length} vragen beantwoord</span>
+        </div>
+        <div class="resultaat-meta-col">
+          <span class="resultaat-datum">${datum}</span>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="resultaat-chevron" style="flex-shrink:0;transition:transform .2s;"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="resultaat-antwoorden" style="display:none;">${antwoordenHtml}</div>`;
+
+    const header   = item.querySelector('.resultaat-header');
+    const antwoorden = item.querySelector('.resultaat-antwoorden');
+    const chevron  = item.querySelector('.resultaat-chevron');
+
+    header.addEventListener('click', () => {
+      const open = antwoorden.style.display !== 'none';
+      antwoorden.style.display = open ? 'none' : 'flex';
+      chevron.style.transform = open ? '' : 'rotate(180deg)';
+      header.setAttribute('aria-expanded', String(!open));
+    });
+    header.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); header.click(); }
+    });
+
+    return item;
+  };
+
   const _renderResultaten = () => {
     _vulOpdrachtSelect('resultaat-filter');
     const filterOpdrachtId = document.getElementById('resultaat-filter')?.value || '';
-    let resultaten = StorageModule.getResultaten();
 
-    if (filterOpdrachtId) {
-      resultaten = resultaten.filter(r => r.opdrachtId === filterOpdrachtId);
-    }
+    const alleResultaten = StorageModule.getResultaten().filter(r => r.ingezonden);
+    const opdrachten     = StorageModule.getOpdrachten();
 
     const lijst = document.getElementById('resultaten-list');
     const leeg  = document.getElementById('empty-resultaten');
     if (!lijst) return;
 
-    const ingezonden = resultaten.filter(r => r.ingezonden);
-    UIComponents.toggle(leeg, ingezonden.length === 0);
+    // Groepeer ingezonden resultaten per opdrachtId
+    const perOpdracht = new Map();
+    alleResultaten.forEach(res => {
+      if (!perOpdracht.has(res.opdrachtId)) perOpdracht.set(res.opdrachtId, []);
+      perOpdracht.get(res.opdrachtId).push(res);
+    });
+
+    // Toon leeg-state alleen als er helemaal geen inzendingen zijn
+    UIComponents.toggle(leeg, alleResultaten.length === 0);
     lijst.innerHTML = '';
 
-    ingezonden.forEach(res => {
-      const opdracht = StorageModule.getOpdracht(res.opdrachtId);
-      const vragen   = opdracht?.vragen || [];
-      const beantwoord = vragen.filter(v => res.antwoorden?.[v.id] !== undefined && res.antwoorden?.[v.id] !== '').length;
-      const datum = new Date(res.datum).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    opdrachten.forEach(opdracht => {
+      // Als er een filter actief is, toon alleen die sectie
+      if (filterOpdrachtId && opdracht.id !== filterOpdrachtId) return;
 
-      const item = document.createElement('div');
-      item.className = 'resultaat-item';
+      const resultatenVoorOpdracht = perOpdracht.get(opdracht.id) || [];
+      const aantalInzendingen = resultatenVoorOpdracht.length;
 
-      // Bouw antwoorden HTML
-      const antwoordenHtml = vragen.map((vraag, qi) => {
-        const antwoord = res.antwoorden?.[vraag.id];
-        const heeftAntwoord = antwoord !== undefined && antwoord !== null && antwoord !== '';
-        const letters = 'ABCDE';
+      const sectie = document.createElement('div');
+      sectie.className = 'resultaten-sectie';
 
-        let antwoordTekst = '';
-        let antwoordKlasse = '';
-        if (!heeftAntwoord) {
-          antwoordTekst = '— niet beantwoord —';
-          antwoordKlasse = 'antwoord-leeg';
-        } else if (vraag.type === 'meerkeuze') {
-          const optieIdx = parseInt(antwoord);
-          const optie = vraag.opties?.[optieIdx];
-          const isCorrect = optieIdx === vraag.correctOptie;
-          antwoordTekst = `${letters[optieIdx] || optieIdx}. ${optie?.tekst || ''}`;
-          antwoordKlasse = vraag.correctOptie !== null
-            ? (isCorrect ? 'antwoord-correct' : 'antwoord-fout')
-            : '';
-        } else {
-          antwoordTekst = antwoord;
-        }
+      const sectionHeader = document.createElement('div');
+      sectionHeader.className = 'resultaten-sectie-header';
+      sectionHeader.innerHTML = `
+        <span>${UIComponents.escapeHtml(opdracht.naam)}</span>
+        <span>${aantalInzendingen} ${aantalInzendingen === 1 ? 'inzending' : 'inzendingen'}</span>`;
+      sectie.appendChild(sectionHeader);
 
-        return `
-          <div class="antwoord-item">
-            <div class="antwoord-vraag-nr">Vraag ${qi + 1}</div>
-            <div class="antwoord-vraag">${UIComponents.escapeHtml(vraag.tekst)}</div>
-            <div class="antwoord-waarde ${antwoordKlasse}">${UIComponents.escapeHtml(antwoordTekst)}</div>
-          </div>`;
-      }).join('');
+      if (aantalInzendingen === 0) {
+        const leegBericht = document.createElement('p');
+        leegBericht.style.cssText = 'font-size:.8rem;color:var(--grey-400);font-style:italic;';
+        leegBericht.textContent = 'Nog geen inzendingen';
+        sectie.appendChild(leegBericht);
+      } else {
+        resultatenVoorOpdracht.forEach(res => {
+          sectie.appendChild(_renderResultatenItem(res));
+        });
+      }
 
-      item.innerHTML = `
-        <div class="resultaat-header" role="button" tabindex="0" aria-expanded="false">
-          <div class="resultaat-token-col">
-            <span class="resultaat-token">${UIComponents.escapeHtml(res.token)}</span>
-          </div>
-          <div class="resultaat-info-col">
-            <span class="resultaat-opdracht">${UIComponents.escapeHtml(opdracht?.naam || 'Onbekende opdracht')}</span>
-            <span class="resultaat-stats">${beantwoord} / ${vragen.length} vragen beantwoord</span>
-          </div>
-          <div class="resultaat-meta-col">
-            <span class="resultaat-datum">${datum}</span>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="resultaat-chevron" style="flex-shrink:0;transition:transform .2s;"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        </div>
-        <div class="resultaat-antwoorden" style="display:none;">${antwoordenHtml}</div>`;
-
-      const header   = item.querySelector('.resultaat-header');
-      const antwoord = item.querySelector('.resultaat-antwoorden');
-      const chevron  = item.querySelector('.resultaat-chevron');
-
-      header.addEventListener('click', () => {
-        const open = antwoord.style.display !== 'none';
-        antwoord.style.display = open ? 'none' : 'flex';
-        chevron.style.transform = open ? '' : 'rotate(180deg)';
-        header.setAttribute('aria-expanded', String(!open));
-      });
-      header.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); header.click(); }
-      });
-
-      lijst.appendChild(item);
+      lijst.appendChild(sectie);
     });
   };
 

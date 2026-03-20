@@ -723,15 +723,17 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
   background: var(--bg-primary);
   border: 1px solid var(--border-default);
   border-radius: var(--r-md);
-  padding: var(--sp-3) var(--sp-4);
+  padding: 10px 12px;
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  text-align: center;
   color: var(--text-primary);
   letter-spacing: 0.08em;
   cursor: pointer;
   transition: all var(--t-fast);
   user-select: all;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .token-chip:hover {
@@ -1468,6 +1470,21 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
     overflow-x: auto;
   }
   .nav-item { white-space: nowrap; }
+}
+
+/* Resultaten per opdracht gegroepeerd */
+.resultaten-sectie { margin-bottom: 32px; }
+
+.resultaten-sectie-header {
+  font-size: .8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--grey-600);
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* Resultaten verbeterd */
