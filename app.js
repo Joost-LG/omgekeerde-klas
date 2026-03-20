@@ -111,43 +111,25 @@ const MediaModule = (() => {
   };
 
   /**
-   * Render YouTube altijd als preview-kaart met directe link.
-   * Embedding werkt niet voor video's waarbij de eigenaar dit heeft uitgeschakeld
-   * (YouTube Fout 153). Een klikbare preview met thumbnail is betrouwbaarder
-   * en werkt altijd — ongeacht de privacy-instellingen van de video.
+   * Render YouTube als compacte horizontale balk met directe link.
+   * Betrouwbaarder dan embedding: werkt altijd, ongeacht de privacy-instellingen van de video.
    */
   const renderYoutube = (url) => {
     const videoId = _youtubeVideoId(url);
     if (!videoId) return renderFout('Ongeldige YouTube URL. Controleer de link.');
 
-    const thumb  = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
     const extern = `https://www.youtube.com/watch?v=${videoId}`;
 
     return `
-      <div style="width:100%;display:flex;flex-direction:column;">
-        <a href="${extern}" target="_blank" rel="noopener noreferrer" style="display:block;position:relative;text-decoration:none;">
-          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:#0f0f0f;">
-            <img src="${thumb}" alt="YouTube video thumbnail"
-              style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
-              onerror="this.style.display='none'">
-            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(0,0,0,.38);">
-              <div style="width:68px;height:48px;background:#ff0000;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.4);">
-                <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M9 7l12 6-12 6V7z" fill="white"/></svg>
-              </div>
-              <span style="color:#fff;font-size:.8rem;font-family:var(--font-sans);font-weight:500;letter-spacing:.02em;text-shadow:0 1px 4px rgba(0,0,0,.6);">Bekijken op YouTube ↗</span>
-            </div>
-          </div>
-        </a>
-        <div style="padding:10px 14px;background:#0f0f0f;display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <span style="color:var(--grey-500);font-size:.72rem;font-family:var(--font-mono);letter-spacing:.04em;">youtube.com</span>
-          <a href="${extern}" target="_blank" rel="noopener noreferrer"
-            style="color:var(--grey-300);font-size:.75rem;font-family:var(--font-sans);font-weight:500;text-decoration:none;background:rgba(255,255,255,.08);padding:4px 10px;border-radius:4px;transition:background .15s;"
-            onmouseover="this.style.background='rgba(255,255,255,.15)'"
-            onmouseout="this.style.background='rgba(255,255,255,.08)'">
-            Openen ↗
-          </a>
-        </div>
-      </div>`;
+      <a href="${extern}" target="_blank" rel="noopener noreferrer"
+        style="display:flex;align-items:center;gap:10px;width:100%;height:48px;background:#0f0f0f;color:#fff;text-decoration:none;padding:0 14px;box-sizing:border-box;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect width="24" height="24" rx="5" fill="#ff0000"/>
+          <path d="M9.5 7.5l7 4.5-7 4.5V7.5z" fill="white"/>
+        </svg>
+        <span style="flex:1;font-size:.82rem;font-family:var(--font-sans);font-weight:500;">Bekijk op YouTube</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13L13 3M13 3H7M13 3v6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>`
   };
 
   /**
@@ -178,19 +160,21 @@ const MediaModule = (() => {
         </div>`;
     }
 
-    // Webpagina: toon direct een duidelijke focus-kaart met uitleg
+    // Webpagina: compacte horizontale balk met domeinnaam en openknop
+    let hostname = url;
+    try { hostname = new URL(url).hostname; } catch { /* ongeldige URL, gebruik ruwe string */ }
+
     return `
-      <div class="media-link-view">
-        <div class="media-link-icon">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="1.4"/><path d="M12 16h8M16 12v8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        </div>
-        <p class="media-link-title">Externe bron</p>
-        <p style="font-size:.8rem;color:var(--grey-400);max-width:240px;text-align:center;line-height:1.5;">
-          Open de bron in een nieuw tabblad. Kom daarna terug om je antwoord in te vullen.
-        </p>
-        <a href="${url}" target="_blank" rel="noopener noreferrer" class="media-link-btn">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 12L12 2M12 2H6M12 2v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          ${label}
+      <div style="display:flex;align-items:center;gap:10px;width:100%;height:48px;background:#0f0f0f;padding:0 14px;box-sizing:border-box;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink:0;">
+          <circle cx="9" cy="9" r="7.5" stroke="#888" stroke-width="1.3"/>
+          <ellipse cx="9" cy="9" rx="3" ry="7.5" stroke="#888" stroke-width="1.3"/>
+          <line x1="1.5" y1="9" x2="16.5" y2="9" stroke="#888" stroke-width="1.3"/>
+        </svg>
+        <span style="flex:1;font-size:.8rem;font-family:var(--font-mono);color:var(--grey-400);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${hostname}</span>
+        <a href="${url}" target="_blank" rel="noopener noreferrer"
+          style="font-size:.78rem;font-family:var(--font-sans);font-weight:500;color:#fff;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+          Openen ↗
         </a>
       </div>`;
   };
@@ -880,6 +864,30 @@ const DocentController = (() => {
   const _initTokensPanel = () => {
     document.getElementById('btn-genereer-tokens')?.addEventListener('click', _genereerTokens);
     _vulOpdrachtSelect('token-opdracht');
+
+    document.getElementById('btn-export-csv')?.addEventListener('click', () => {
+      const tokens = StorageModule.getTokens();
+      const rijen = [
+        ['code', 'opdracht', 'gebruikt'],
+        ...tokens.map(token => {
+          const opdrachtNaam = StorageModule.getOpdracht(token.opdrachtId)?.naam || 'Geen';
+          return [token.code, opdrachtNaam, token.gebruikt ? 'ja' : 'nee'];
+        })
+      ];
+      const csv = rijen.map(r => r.map(v => `"${v}"`).join(',')).join('\r\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'tokens.csv';
+      a.click();
+    });
+
+    document.getElementById('btn-print-tokens')?.addEventListener('click', () => {
+      const tokens = StorageModule.getTokens();
+      const codes = tokens.map(t => `<div style="font-family:monospace;font-size:14px;padding:8px 12px;border:1px solid #ccc;">${t.code}</div>`).join('');
+      const venster = window.open('', '_blank');
+      venster.document.write(`<!DOCTYPE html><html><head><title>Tokens</title><style>body{margin:16px;}div.grid{display:grid;grid-template-columns:repeat(6,auto);gap:8px;}</style></head><body><div class="grid">${codes}</div><script>window.print();<\/script></body></html>`);
+      venster.document.close();
+    });
   };
 
   const _vulOpdrachtSelect = (selectId) => {
@@ -1208,6 +1216,14 @@ const LeerlingController = (() => {
 
     StateProvider.setVraagIndex(idx);
 
+    if (StateProvider.get().ingezonden === true) {
+      const volgende = document.getElementById('btn-volgende');
+      if (volgende) {
+        volgende.disabled = true;
+        volgende.textContent = 'Ingezonden \u2713';
+      }
+    }
+
     const total = _opdracht.vragen.length;
 
     // Progress
@@ -1358,6 +1374,9 @@ const LeerlingController = (() => {
   };
 
   const _inzenden = () => {
+    const bevestigd = confirm('Weet je zeker dat je je antwoorden wilt inzenden? Dit kan niet ongedaan worden gemaakt, je kunt daarna niet meer wijzigen.');
+    if (!bevestigd) return;
+
     StateProvider.markeerIngezonden();
 
     UIComponents.toggle(document.getElementById('student-workspace'), false);

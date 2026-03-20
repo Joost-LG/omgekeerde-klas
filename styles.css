@@ -1119,7 +1119,8 @@ h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
 
 /* Media paneel */
 .media-panel {
-  width: 50%;
+  width: 280px;
+  max-width: 280px;
   flex-shrink: 0;
   background: var(--grey-900);
   display: flex;
